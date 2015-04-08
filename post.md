@@ -53,7 +53,7 @@ As with any node application, I'm starting with a new directory and the package.
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "git://github.com/manonthemat/epione.git"
+    "url": "git://github.com/PiichMe/epione.git"
   },
   "description": "Epione is the goddess of soothing of pain.",
   "author": "Matthias Sieber <matthiasksieber@gmail.com>",
@@ -243,7 +243,6 @@ module.exports = (function() {
   }
 
   return obj;
-
 }());
 ```
 
@@ -354,7 +353,7 @@ Save your graph story neo4j environment variables into your ~/.zshenv (don't for
 Your two tests should pass and the code coverage should be over 85%.
 
 ### Push to GitHub
-Now that your application is locally tested, we can push it to [GitHub](github.com).
+Now that your application is locally tested, we can push it to [GitHub](http://github.com).
 
 I won't go over the git work flow, but after you've initialized your git repository via `git init` it's a good idea to create a .gitignore file and exclude some files and directories. My minimal .gitignore for a node project on a Mac using vim looks usually like this:
 ```
@@ -375,14 +374,14 @@ We've decided to host our application on [AWS](http://aws.amazon.com/) primarily
 [Shippable](https://www.shippable.com/) is a containerized continious integration platform. Because we want to build a docker image for our application from the official node docker image later on, I recommend signing up for the Startup account. This tutorial requires it (at least at this point) and the currently $12/year are well spent.
 
 ### Setting up the dedicated host
-Now is the time to set up a dedicated host that will communicate with shippable to make the seemingless deployment possible. For this example, I've chosen to set up a t2.small EC2 instance in North Virginia (USA), also known as [us-east-1](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1). Note: Shippable won't run on a t2.micro, as 2 GB of RAM are required.
+Now is the time to set up a dedicated host that will communicate with Shippable to make the seemingless deployment possible. For this example, I've chosen to set up a t2.small EC2 instance in North Virginia (USA), also known as [us-east-1](https://console.aws.amazon.com/ec2/v2/home?region=us-east-1). Note: Shippable won't run on a t2.micro, as 2 GB of RAM are required.
 
 Use the Ubuntu 14.04 image on a t2.small instance (or better) with 30 GB of storage (or more). Everything else can stay the same. You'd also need SSH access, so be sure to generate a new key-pair or chose an existing one you can use.
 ![ubuntu image](https://s3-us-west-2.amazonaws.com/deployment-article/images/aws_dedicated_host.png)
 After the instance has launched, I recommend giving it an Elastic IP as a public not changing IP address is required in shippable.
 
-Talking about shippable, let's head over there.
-Once you set-up your startup account for yourself or your organization, we now need to make our AWS instance available for shippable.
+Talking about Shippable, let's head over there.
+Once you set-up your startup account for yourself or your organization, we now need to make our AWS instance available for Shippable.
 ![set up the dedicated host in shippable](https://s3-us-west-2.amazonaws.com/deployment-article/images/aws_dedicated_host_shippable.png)
 
 Now click *Add Node*, connect to your AWS EC2 instance that's going to be the dedicated host, copy the command that's showing up on the modal and paste it into your ssh session. You can then exit the ssh session. Now fill out the connection details and hit save.
@@ -393,11 +392,11 @@ After the node is added, we can initialize it by hitting the *power icon*. This 
 
 Your AWS EC2 instance is now ready to build and deploy.
 
-#### Enable GitHub repo for shippable
-Let's find our GitHub repo in shippable by browsing to app.shippable.com and enable the repo where our application code is hosted.
+#### Enable GitHub repo for Shippable
+Let's find our GitHub repo in Shippable by browsing to app.shippable.com and enable the repo where our application code is hosted.
 ![enable repo](https://s3-us-west-2.amazonaws.com/deployment-article/images/shippable_select_repo.png)
 
-Now the repository has been activated and shippable uses the webhooks to start a build process. As you can see, no builds have been run yet. We're about to change that.
+Now the repository has been activated and Shippable uses the webhooks to start a build process. As you can see, no builds have been run yet. We're about to change that.
 ![repository activated](https://s3-us-west-2.amazonaws.com/deployment-article/images/shippable_repository_activated.png)
 
 In order to do that, we need to switch between AWS, Shippable and our application source code quite a bit.
@@ -405,8 +404,8 @@ In order to do that, we need to switch between AWS, Shippable and our applicatio
 #### Get AWS credentials
 If you haven't done it already, create a user in the [IAM Management Console](https://console.aws.amazon.com/iam/home?region=us-east-1#users) for the buildserver. You will need the credentials in a bit.
 
-#### Create AWS ElasticBeanstalk
-Now we're preparing our ElasticBeanstalk application and environments. I invite you to create a new EBS application in [us-east-1](https://console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/newApplication).
+#### Create AWS Elastic Beanstalk
+Now we're preparing our Elastic Beanstalk application and environments. I invite you to create a new EBS application in [us-east-1](https://console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/newApplication).
 
 I fill out the Application name with *epione*.
 On the next page I select *Create Web Server*.
@@ -423,7 +422,6 @@ While our *production* environment is launching with a sample application, we sh
 The steps are the same, but you'll need a different environment name and url. Also, you will probably use less powerful instances in development than in production.
 ![dev env](https://s3-us-west-2.amazonaws.com/deployment-article/images/aws_ebs_dev_env.png)
 
-Some applications might take longer to deploy and while the deployment will still succeed, shippable will return an error due to EBS not responding in time. To avoid that scenario I recommend increasing the timeout from the default of 600 seconds to 1200. In your environment go to *Configuration* -> *Updates and Deployments* and then set the *Command Timeout* to 1200 or higher.
 
 ### Preparing the app for AWS EBS
 So let's actually get back to our application source code. In order for our git push to have the desired effect of deploying to AWS, we need to do just a little bit of preparation.
@@ -479,10 +477,11 @@ script:
   - npm test
 commit_container: manonthemat/epione
 after_success:
-  - eb init && eb deploy
+  - eb init && eb deploy --timeout 20
 notifications:
   email: false
 ```
+Some applications might take longer to deploy and while the deployment will still succeed, Shippable will return an error due to EBS not responding in time. To avoid that scenario I recommend increasing the timeout from the default of 10 minutes to 20 minutes with the timeout option in the deploy step as shown above.
 
 Shippable allows you to encrypt the environment variable definitions and keep your configurations private using the secure tag as shown above. To do so, browse to the organization dashboard or individual dashboard page from where you have enabled your project and click on ENCRYPT ENV VARS button.
 ![encrypt env variables](https://s3-us-west-2.amazonaws.com/deployment-article/images/shippable_encrypt+envs.png)
@@ -605,7 +604,25 @@ One of the many use cases is that I can give my colleagues on the front-end acce
 
 The last step in our build/deployment process is the upload of our docker image to docker hub. A developer can then go ahead and run a specific version locally and use that to further develop his/her own application against it.
 
-    docker run -p 8000:8000 manonthemat/epione:master.2.1
+    docker run -p 8000:8000 manonthemat/epione:master.2
 
 Will run the application locally and map the applications port 8000 to another port on the host machine.
 
+### Testing with the Docker image
+
+Try running the tests:
+
+    docker run manonthemat/epione:master.2 npm test
+
+Instead of actually running the tests, this should fail as the node environment get switched to *test* and we haven't included any test environments in the dockerfile. So let's set the expected environment variables for the docker container:
+
+    docker run -e EPIONE_TEST_NODE_HOST='0.0.0.0' -e EPIONE_TEST_NODE_PORT='8000' -e EPIONE_TEST_DB_PROTOCOL='https' -e EPIONE_TEST_DB_PORT='7473' -e EPIONE_TEST_DB_HOST='neo-blablabla.do-stories.graphstory.com' -e EPIONE_TEST_DB_USER='graphstoryuser' -e EPIONE_TEST_DB_PASS='graphstorypassword' manonthemat/epione:master.2 npm test
+
+Now the tests should pass and everything is awesome.
+
+## Where to go from here
+This deployment strategy saved my development teams a lot of pain, stress and all-around suffering. Because deploying is now *real simple*, we can focus on developing software again.
+
+One thing that I want to do is to include a *after_failure* step.
+
+For example: When the build breaks, the *Release The Drones* protocol will be activated and will find the developer who's responsible for the build breaking. This developer then will get attacked by the swarm and a stationary [Nerf turret](http://amzn.to/1a65ORa).
