@@ -526,28 +526,16 @@ COPY . /data
 WORKDIR /data
 RUN npm install
 
-ENV EPIONE_DEVELOPMENT_DB_PROTOCOL https
-ENV EPIONE_DEVELOPMENT_DB_PORT 7473
-ENV EPIONE_DEVELOPMENT_NODE_HOST 0.0.0.0
-ENV EPIONE_DEVELOPMENT_NODE_PORT 8000
-ENV EPIONE_DEVELOPMENT_DB_HOST neo-blablabla.do-stories.graphstory.com
-ENV EPIONE_DEVELOPMENT_DB_USER user
-ENV EPIONE_DEVELOPMENT_DB_PASS password
-ENV EPIONE_DB_PROTOCOL https
-ENV EPIONE_DB_PORT 7473
-ENV EPIONE_NODE_HOST 0.0.0.0
-ENV EPIONE_NODE_PORT 8000
-ENV EPIONE_DB_HOST neo-blablabla.do-stories.graphstory.com
-ENV EPIONE_DB_USER user
-ENV EPIONE_DB_PASS password
+ENV EPIONE_DEVELOPMENT_DB_PROTOCOL="https" EPIONE_DEVELOPMENT_DB_PORT="7473" EPIONE_DEVELOPMENT_NODE_HOST="0.0.0.0" EPIONE_DEVELOPMENT_NODE_PORT="8000" EPIONE_DEVELOPMENT_DB_HOST="neo-blablabla.do-stories.graphstory.com" EPIONE_DEVELOPMENT_DB_USER"user" EPIONE_DEVELOPMENT_DB_PASS="password" EPIONE_DB_PROTOCOL="https" EPIONE_DB_PORT="7473" EPIONE_NODE_HOST="0.0.0.0" EPIONE_NODE_PORT="8000" EPIONE_DB_HOST="neo-blablabla.do-stories.graphstory.com" EPIONE_DB_USER="user" EPIONE_DB_PASS="password"
 
 CMD ["npm","start"]
 
 ```
 Since the resulting Docker image will be deployed to AWS EBS in either production or development, we don't include the env variables for test. As before, set the values to your values. It is important to set the node host to 0.0.0.0 for proper access.
 
+Notice also how we're putting all the environment variables in one line to reduce the layers in the resulting Docker image.
 
-and a minimalistic `Dockerrun.aws.json` for AWS ElasticBeanstalk to expose port 8000:
+We also need a minimalistic `Dockerrun.aws.json` for AWS ElasticBeanstalk to expose port 8000:
 
 ```
 {
