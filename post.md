@@ -608,9 +608,68 @@ Instead of actually running the tests, this should fail as the node environment 
 
 Now the tests should pass and everything is awesome.
 
+## Things to do when you share your Docker image with the world
+There's tne thing to keep in mind when you want to share your created Docker images with the world or you don't want to expose environment variables that are critical to the app running on AWS. The environment variables you define in your Dockerfile are readable by the user downloading that docker image. Since you're running Docker as platform for your Amazon Elastic Beanstalk, you still need these environment variables for our application, but there's an easy fix for this scenario.
+
+First, let's get rid of the env variables in our Dockerfile, so this is all that's left in it.
+```
+FROM node:0.12
+
+MAINTAINER Matthias Sieber <matthiasksieber@gmail.com>
+
+EXPOSE 8000
+
+COPY . /data
+WORKDIR /data
+RUN npm install
+
+CMD ["npm","start"]
+```
+
+Without the environment variables your docker image is safe, but even if you now deploy your application to AWS Elastic Beanstalk, nginx will probably greet you with a HTTP Status Code 502 "Bad Gateway". A look into the logs and you'll notice that you have not supplied the environment variables needed for our hapi app.
+
+The easy solution is to go to your local git repository and add an `.ebextensions` directory in the root of your project. In this directory, create a file env.config and fill it with your environment variables (the ones you had in your dockerfile) using this format.
+
+```
+option_settings:
+  - option_name: EPIONE_DEVELOPMENT_DB_PROTOCOL
+    value: "https"
+  - option_name: EPIONE_DEVELOPMENT_DB_PORT
+    value: "7473"
+  - option_name: EPIONE_DEVELOPMENT_NODE_HOST
+    value: "0.0.0.0"
+  - option_name: EPIONE_DEVELOPMENT_NODE_PORT
+    value: "8000"
+  - option_name: EPIONE_DEVELOPMENT_DB_HOST
+    value: "neo-blabla.do-stories.graphstory.com"
+  - option_name: EPIONE_DEVELOPMENT_DB_USER
+    value: "graphstoryuser"
+  - option_name: EPIONE_DEVELOPMENT_DB_PASS
+    value: "graphstorypass"
+  - option_name: EPIONE_DB_PROTOCOL
+    value: "https"
+  - option_name: EPIONE_DB_PORT
+    value: "7473"
+  - option_name: EPIONE_NODE_HOST
+    value: "0.0.0.0"
+  - option_name: EPIONE_NODE_PORT
+    value: "8000"
+  - option_name: EPIONE_DB_HOST
+    value: "neo-blabla.do-stories.graphstory.com"
+  - option_name: EPIONE_DB_USER
+    value: "graphstoryuser"
+  - option_name: EPIONE_DB_PASS
+    value: "graphstorypass"
+```
+
+Now add this directory and the file to your git commit and push it. Your deployment should be successful and your created docker image should not contain any environment variables you don't want the outside world to know.
+
 ## Where to go from here
 This deployment strategy saved my development teams a lot of pain, stress and all-around suffering. Because deploying is now *real simple*, we can focus on developing software again.
 
 One thing that I want to do is to include a *after_failure* step.
 
 For example: When the build breaks, the *Release The Drones* protocol will be activated and will find the developer who's responsible for the build breaking. This developer then will get attacked by the swarm and a stationary [Nerf turret](http://amzn.to/1a65ORa).
+
+If this article gets shared over 2500 times via Airpair's social media widget, I shall write a follow up article on that topic.
+
