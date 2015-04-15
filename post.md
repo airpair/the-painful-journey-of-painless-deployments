@@ -94,7 +94,15 @@ var constants = require('src/config/constants.js');
 var host = constants.application.host;
 var port = constants.application.port;
 var commitURL = constants.database.commitUrl;
-var server = new Hapi.Server();
+var server = new Hapi.Server({
+  connections: {
+    routes: {
+      cors: {
+        origin: ['*'] // to allow API requests from our front end later
+      }
+    }
+  }
+});
 
 server.connection({ host: host, port: port });
 
