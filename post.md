@@ -670,7 +670,15 @@ option_settings:
     value: "graphstorypass"
 ```
 
-Now add this directory and the file to your git commit and push it. Your deployment should be successful and your created docker image should not contain any environment variables you don't want the outside world to know.
+Now add this directory and the file to your git commit. Before you push this commit however, let's take a break and think about what we're doing. Surely, our Amazon Elastic Beanstalk application will have all the information needed for a successful deployment, but so will have the docker image that we'll be pushing to docker hub.
+
+A simple fix is to add another *after_success* step after our eb init and deploy step. In the shippable.yml add this as final step within the *after_success* section:
+
+    - git rm -rf .ebextensions .elasticbeanstalk
+
+This will remove the AWS specific configuration files from the docker image that's being pushed to docker hub.
+
+Your deployment should be successful and your created docker image should not contain any environment variables you don't want the outside world to know.
 
 ## Where to go from here
 This deployment strategy saved my development teams a lot of pain, stress and all-around suffering. Because deploying is now *real simple*, we can focus on developing software again.
